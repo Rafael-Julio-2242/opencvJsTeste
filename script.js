@@ -1,39 +1,40 @@
-const video = document.getElementById("video-input");
-const canvas = document.getElementById("canvas-output");
+let canvasOutput = document.getElementById("canvas-output");
 
-(async () => {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: false,
-  });
+let canvasInput = document.getElementById("canvas-input");
 
-  let src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
-  let cap = new cv.VideoCapture(video);
+let fileInput = document.getElementById("file-input");
 
-  video.srcObject = stream;
-  video.play();
+fileInput.addEventListener('change', (e) => {
 
-  const FPS = 30;
+ let files = e.target.files;
 
-  function proccessVideo() {
+ if (files.length > 0) {
+  let imgUrl = URL.createObjectURL(files[0]);
 
-   let begin = Date.now();
+  // Aqui eu carrego ela no canvas
+  let ctx = canvasInput.getContext('2d');
+  let img = new Image();
 
-   cap.read(src);
+  img.onload = function () {
+   canvasInput.width = img.width;
+   canvasInput.height = img.height;
+   ctx.drawImage(img, 0, 0, img.width, img.height);
+   
+   // canvasOutput.width = img.width;
+   // canvasOutput.height = img.height;
+   // ctxOutput.drawImage(img, 0, 0, img.width, img.height);
 
-   let gray = new cv.Mat();
-   cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-
-   let thresh = new cv.Mat();
-   cv.threshold(gray, thresh, 90, 255, cv.THRESH_BINARY);
-
-
-   cv.imshow("canvas-output", thresh);
-
-   let delay = 1000 / FPS - (Date.now() - begin);
-   setTimeout(proccessVideo, delay);
   }
+  img.src = imgUrl;
 
-  setTimeout(proccessVideo, 0);
+  // Agora, utilizando o opencv
+  let src = cv.imread('canvas-input');
+  let gray = new cv.Mat();
 
-})();
+  cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+  cv.imshow('canvas-output', gray);
+
+ }
+
+
+})
